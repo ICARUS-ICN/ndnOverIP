@@ -31,7 +31,6 @@ void llegada_paquete(u_char *, const struct pcap_pkthdr* , const u_char* );
 void print_icmp_packet(const u_char *, int );
 void print_tcp_packet(const u_char *, int );
 void print_udp_packet(const u_char *, int);
-void print_ip_packet(const u_char *, int);
 void print_ip_header(const u_char *, int );
 
 
