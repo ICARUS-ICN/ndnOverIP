@@ -1,18 +1,18 @@
 #define BOOST_BIND_NO_PLACEHOLDERS
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <pcap.h>
-#include <netinet/ether.h>
-#include <netinet/ip.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <netinet/ether.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <pcap.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <sys/socket.h>
 #include <vector>
 
 #include <boost/asio/io_service.hpp>
@@ -23,8 +23,8 @@
 #include <ndn-cxx/security/key-chain.hpp>
 #include <ndn-cxx/security/signing-helpers.hpp>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 // ************************************************** DECLARACION ESTRUCTURAS/CLASES Y FUNCIONES **********************************************
 
@@ -319,7 +319,8 @@ pcap_t *configuracion_captura_libpcap()
 
     //Se pide que se introduzca en qué interfaz se desea capturar
     printf("Enter the number  of the device that you want to capture: ");
-    while(scanf("%d", &n) != 1){
+    while (scanf("%d", &n) != 1)
+    {
         printf("Failed to read the number. Enter it again: \n");
     }
     dev = devs[n];
@@ -410,7 +411,6 @@ std::vector<std::string> split(const std::string &s, char delim)
 
     return result;
 }
-
 
 struct sockaddr_in print_icmp_packet(const u_char *Buffer, int Size)
 {
@@ -922,7 +922,6 @@ namespace ndn
 
     } // namespace gateway
 } // namespace ndn
-
 
 // ************************************************** MAIN **********************************************
 int main(int argc, char *argv[])
