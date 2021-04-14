@@ -698,7 +698,7 @@ namespace processLibpcap
             std::cerr << "A packet from the IPv4 world has arrived!" << std::endl;
 
             // Desde el hilo ejecutamos variable_contexto.dispatch(callback...) cada vez que nos llega un paquete.
-            io_context->dispatch(std::bind(pcap_callback, paquete, &pkthdr, face));
+            io_context->dispatch(bind(pcap_callback, paquete, &pkthdr, face));
         }
     }
 } //namespace processLibpcap
@@ -719,17 +719,17 @@ namespace ndn
             {
                 // Iniciar un hilo representando los paquetes pcap entrantes. En nuestro caso, se usan numeros para representarlos
                 // Crear un hijo, al que le pasamos como parámetro un puntero a variable_contexto
-                boost::scoped_thread<> t{boost::thread(boost::bind(&processLibpcap::pcap_reader, &m_ioContext, &m_face))};
+                boost::scoped_thread<> t{boost::thread(bind(&processLibpcap::pcap_reader, &m_ioContext, &m_face))};
 
                 //Respondera las Interest que lleguen con prefijo /mired/<mi_nodo>/ip/request --> Solicitud para enviarle un paquete IP
                 m_face.setInterestFilter("/mired/" + thisNodo + "/ip/request",
-                                         bind(&Producer::onInterest_request, this, _1, _2),
+                                         bind(&Producer::onInterest_request, this, _2),
                                          nullptr, // RegisterPrefixSuccessCallback is optional
                                          bind(&Producer::onRegisterFailed_request, this, _1, _2));
 
                 //Respondera las Interest que lleguen con prefijo /mired/<mi_nodo>/ip/datagram --> Para enviar el paquete IP en el Data al otro gateway
                 m_face.setInterestFilter("/mired/" + thisNodo + "/ip/datagram",
-                                         bind(&Producer::onInterest_datagram, this, _1, _2),
+                                         bind(&Producer::onInterest_datagram, this, _2),
                                          nullptr, // RegisterPrefixSuccessCallback is optional
                                          bind(&Producer::onRegisterFailed_datagram, this, _1, _2));
 
@@ -744,7 +744,7 @@ namespace ndn
             //El gateway podrá recibir peticiones internas de la red NDN para direcciones IP que él conozca
             //Llegará Interest solicitando el envío de un Interest para poder enviarle un paquete IP en un futuro Data --> Responde con otra Interest
             void
-            onInterest_request(const InterestFilter &, const Interest &interest_request)
+            onInterest_request(const Interest &interest_request)
             {
                 //Prefijo Interest = /mired/<mi_nodo>/ip/request/<gateway_origen>/<seqno_nodoOrigen>
                 std::cout << ">> Interest arrived: " << interest_request << std::endl;
@@ -766,8 +766,8 @@ namespace ndn
 
                 std::cout << "Sending Interest Datagram to respond de request of an IP packet from other gateway: " << interest << std::endl;
                 m_face.expressInterest(interest,
-                                       bind(&Producer::onData, this, _1, _2),
-                                       bind(&Producer::onNack, this, _1, _2),
+                                       bind(&Producer::onData, this, _2),
+                                       bind(&Producer::onNack, this, _2),
                                        bind(&Producer::onTimeout, this, _1));
             }
 
@@ -782,7 +782,7 @@ namespace ndn
             //Interest de respuesta de un gateway al que previamente se le solicito el envio de un paquete IP (/mired/<this_gateway>/ip/datagram/<this_seqno>)
             //Responde con Data conteniendo el paquete IP previamente guardado en cola de paquetes y prefijo /mired/<this_gateway>/ip/datagram/<this_seqno>
             void
-            onInterest_datagram(const InterestFilter &, const Interest &interest_datagram)
+            onInterest_datagram(const Interest &interest_datagram)
             {
                 std::cout << ">> Interest arrived: " << interest_datagram << std::endl;
 
@@ -829,7 +829,7 @@ namespace ndn
 
             //Llegada de un paquete IP confirmado previamente --> Paquete IP = Contenido del Data --> Enviar a la direccion IP correspondiente
             void
-            onData(const Interest &, const Data &data) const
+            onData(const Data &data) const
             {
                 std::cout << "IP packet received in DATA !!!" << std::endl;
                 // //Extraer paquete del DATA
@@ -898,7 +898,7 @@ namespace ndn
             }
 
             void
-            onNack(const Interest &, const lp::Nack &nack) const
+            onNack(const lp::Nack &nack) const
             {
                 std::cout << "Received Nack with reason " << nack.getReason() << std::endl;
             }
