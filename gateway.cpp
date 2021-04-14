@@ -46,15 +46,15 @@ public:
         seqno_paquete = num;
         size = sizeIp;
     }
-    const u_char *getPacket()
+    const u_char *getPacket() const
     {
         return packet;
     }
-    int getSeqno()
+    int getSeqno() const
     {
         return seqno_paquete;
     }
-    int getSize()
+    int getSize() const
     {
         return size;
     }
@@ -125,15 +125,15 @@ public:
         int header_size = iphdrlen + (sizeof(icmph)); // asumiendo que serán paquete ICMP
 
         //Imprimir por consola para comprobaciones
-        std::cout << "<< Content of PAYLOAD saved: " << std::endl;
+        std::cerr << "<< Content of PAYLOAD saved: " << std::endl;
         PrintData(p + header_size, (size - header_size));
-        std::cout << "<< Content of FULL packet saved: " << std::endl;
+        std::cerr << "<< Content of FULL packet saved: " << std::endl;
         PrintData(p, size);
-        std::cout << "<< Size of FULL packet saved: " << size << std::endl;
+        std::cerr << "<< Size of FULL packet saved: " << size << std::endl;
 
         Paquete_cola packet(p, seqno_nodo, size);
         paquetes.push_back(packet);
-        seqno_nodo = seqno_nodo + 1;
+        seqno_nodo += 1;
         return seqno_nodo; //devuelve el seqno_nodo+1 (el paquete se guardo en la cola con seqno --> Necesario para poder usarse en el Interest enviado)
     }
 
@@ -142,9 +142,8 @@ public:
     {
         boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
-        for (std::size_t i = 0; i < paquetes.size(); i++)
+        for (const auto p : paquetes)
         {
-            Paquete_cola p = paquetes.at(i);
             if (p.getSeqno() == seqno)
             {
                 return p.getPacket();
