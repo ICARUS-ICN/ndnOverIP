@@ -1,27 +1,21 @@
-#define BOOST_BIND_NO_PLACEHOLDERS
-
 #include <arpa/inet.h>
-#include <errno.h>
 #include <netinet/ether.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <pcap.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <sys/socket.h>
 #include <vector>
 
-#include <boost/asio/io_service.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/scoped_thread.hpp>
-
 #include <ndn-cxx/face.hpp>
 #include <ndn-cxx/security/key-chain.hpp>
 #include <ndn-cxx/security/signing-helpers.hpp>
+
+#include <boost/asio/io_service.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/scoped_thread.hpp>
 
 #include <fstream>
 #include <iostream>
