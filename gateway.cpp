@@ -161,9 +161,8 @@ public:
     {
         boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
-        for (std::size_t i = 0; i < paquetes.size(); i++)
+        for (const auto p : paquetes)
         {
-            Paquete_cola p = paquetes.at(i);
             if (p.getSeqno() == seqno)
             {
                 return p.getSize();
