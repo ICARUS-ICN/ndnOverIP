@@ -232,7 +232,7 @@ std::vector<Entrada_encaminamiento> inicializacion_tabla()
     std::ifstream fichero("/home/mariel/Escritorio/tablaEncaminamiento.txt");
     if (fichero.fail())
     {
-        std::cout << "FILE does NOT exist!" << std::endl;
+        std::cerr << "FILE does NOT exist!" << std::endl;
         exit(1);
     }
 
@@ -247,7 +247,7 @@ std::vector<Entrada_encaminamiento> inicializacion_tabla()
             entrada.prefijo_ip.s_addr = inet_addr(tokens.at(0).c_str());
             entrada.prefijo_ndn = tokens.at(1);
             tabla.push_back(entrada);
-            std::cout << "New entry added: " << tokens.at(0) << "--" << tokens.at(1) << std::endl;
+            std::cerr << "New entry added: " << tokens.at(0) << "--" << tokens.at(1) << std::endl;
         }
     }
     fichero.close();
@@ -368,21 +368,20 @@ pcap_t *configuracion_captura_libpcap()
     }
 
     //char filtro[30] = "ip and src host 1.2.3.6";
-    char filtro[100] = "ip and src net ";
-    char filtro2[100] = " mask ";
-    strcat(filtro, network.c_str()); //ip and src net <net_dir>
-    strcat(filtro, filtro2);         //ip and src net <net_dir> mask
-    strcat(filtro, mask);            //ip and src net <net_dir> mask <mask>
-    if (pcap_compile(descr, &fp, filtro, 0, netp) == -1)
+    std::string filtro = "ip and src net ";
+    filtro.append(network);  //ip and src net <net_dir>
+    filtro.append(" mask "); //ip and src net <net_dir> mask
+    filtro.append(mask);     //ip and src net <net_dir> mask <mask>
+    if (pcap_compile(descr, &fp, filtro.c_str(), 0, netp) == -1)
     {
-        fprintf(stderr, "Error compiling the filter\n");
+        std::cerr << "Error compiling the filter" << std::endl;
         exit(1);
     }
 
     //Se aplica el filtro a la interfaz de captura
     if (pcap_setfilter(descr, &fp) == -1)
     {
-        fprintf(stderr, "Error setting the filter\n");
+        std::cerr << "Error setting the filter" << std::endl;
         exit(1);
     }
 
@@ -577,17 +576,17 @@ namespace processLibpcap
     int check_tabla_encaminamiento(struct in_addr dest_addr)
     {
         //Se pasa a recorrer la tabla de encaminamiento buscando coincidencias...
-        std::cout << "Checking destination IP in the table: " << inet_ntoa(dest_addr) << std::endl;
+        std::cerr << "Checking destination IP in the table: " << inet_ntoa(dest_addr) << std::endl;
         for (std::size_t i = 0; i < tabla_encaminamiento.size(); i++)
         {
             if (tabla_encaminamiento[i].prefijo_ip.s_addr == dest_addr.s_addr)
             {
-                std::cout << "Destination IP is reachable through NDN network!" << std::endl;
+                std::cerr << "Destination IP is reachable through NDN network!" << std::endl;
                 return (static_cast<int>(i));
             }
         }
         //Si se llega a este punto es que no hubo coincidencias en la tabla de encaminamiento
-        std::cout << "Destination IP is NOT reachable through NDN network!" << std::endl;
+        std::cerr << "Destination IP is NOT reachable through NDN network!" << std::endl;
         return -1;
     }
     // Usada para el procesado del paquete IP entrante
@@ -602,11 +601,11 @@ namespace processLibpcap
         //Comprobar que es un paquete IP
         if (ntohs(eptr->ether_type) == ETHERTYPE_IP)
         {
-            std::cout << "It is an IP packet!" << std::endl;
+            std::cerr << "It is an IP packet!" << std::endl;
         }
         else
         {
-            std::cout << "It is NOT an IP packet!" << std::endl;
+            std::cerr << "It is NOT an IP packet!" << std::endl;
             return;
         }
 
@@ -623,24 +622,24 @@ namespace processLibpcap
         switch (iph->protocol)
         {
         case 1:
-            std::cout << "It is ICMP!" << std::endl;
+            std::cerr << "It is ICMP!" << std::endl;
             dest = print_icmp_packet(packet, size);
             break;
         case 6:
-            std::cout << "It is TCP!" << std::endl;
+            std::cerr << "It is TCP!" << std::endl;
             dest = print_tcp_packet(packet, size);
             break;
         case 17:
-            std::cout << "It is UDP!" << std::endl;
+            std::cerr << "It is UDP!" << std::endl;
             dest = print_udp_packet(packet, size);
             break;
         default:
-            std::cout << "Unknown protocol!" << std::endl;
+            std::cerr << "Unknown protocol!" << std::endl;
             return;
         }
 
         //Se pasa a aplicar la logica de la pasarela NDN
-        std::cout << "Checking destination IP in the table..." << std::endl;
+        std::cerr << "Checking destination IP in the table..." << std::endl;
 
         //Devuelve el indice de la entrada en la tabla que se corresponde con el prefijo destino
         int entrada_tabla = check_tabla_encaminamiento(dest.sin_addr);
@@ -648,11 +647,11 @@ namespace processLibpcap
         if (entrada_tabla >= 0)
         {
             std::string gateway_envio = tabla_encaminamiento[entrada_tabla].prefijo_ndn;
-            std::cout << ">> NDN prefix found: " << gateway_envio << std::endl;
+            std::cerr << ">> NDN prefix found: " << gateway_envio << std::endl;
 
             //Se guarda el paquete en la cola, devolviendo el num de secuencia asignado
             int seqno_paquete = cola_paquetes_nodo.addPaquete(packetIP, sizeIp) - 1;
-            std::cout << "Packet saved in the queue of the gateway with sqno = " << seqno_paquete << std::endl;
+            std::cerr << "Packet saved in the queue of the gateway with sqno = " << seqno_paquete << std::endl;
 
             //Mandar INTEREST "/mired/<gateway_envio>/ip/request/<miNodo>/<seqno_paquete>"
             std::string interestName_saliente = "/mired/" + gateway_envio + "/ip/request/" + thisNodo + "/" + (std::to_string(seqno_paquete));
@@ -663,18 +662,18 @@ namespace processLibpcap
             interes_peticion.setCanBePrefix(false);
             interes_peticion.setMustBeFresh(true);
 
-            std::cout << "Sending Interest " << interes_peticion << std::endl;
+            std::cerr << "Sending Interest " << interes_peticion << std::endl;
             //En realidad esta Interest no espera ninguna respuesta
             face->expressInterest(interes_peticion,
                                   NULL,
                                   NULL,
                                   NULL);
 
-            std::cout << "Request Interest sent to the gateway!" << std::endl;
+            std::cerr << "Request Interest sent to the gateway!" << std::endl;
         }
         else
         {
-            std::cout << "IP prefix is no reachable through the NDN network!! " << std::endl;
+            std::cerr << "IP prefix is no reachable through the NDN network!! " << std::endl;
         }
 
         return;
@@ -745,7 +744,7 @@ namespace ndn
             onInterest_request(const Interest &interest_request)
             {
                 //Prefijo Interest = /mired/<mi_nodo>/ip/request/<gateway_origen>/<seqno_nodoOrigen>
-                std::cout << ">> Interest arrived: " << interest_request << std::endl;
+                std::cerr << ">> Interest arrived: " << interest_request << std::endl;
                 std::string interestName_entrante = (interest_request.getName()).toUri();
 
                 std::vector<std::string> tokens = split(interestName_entrante, '/');
@@ -762,7 +761,7 @@ namespace ndn
                 interest.setMustBeFresh(true);
                 interest.setInterestLifetime(6_s);
 
-                std::cout << "Sending Interest Datagram to respond de request of an IP packet from other gateway: " << interest << std::endl;
+                std::cerr << "Sending Interest Datagram to respond de request of an IP packet from other gateway: " << interest << std::endl;
                 m_face.expressInterest(interest,
                                        bind(&Producer::onData, this, _2),
                                        bind(&Producer::onNack, this, _2),
@@ -782,7 +781,7 @@ namespace ndn
             void
             onInterest_datagram(const Interest &interest_datagram)
             {
-                std::cout << ">> Interest arrived: " << interest_datagram << std::endl;
+                std::cerr << ">> Interest arrived: " << interest_datagram << std::endl;
 
                 //Se recupera el paquete IP de la cola de paquetes utilizando el seqno en la Interest
                 std::string interestName_entrante = (interest_datagram.getName()).toUri();
@@ -797,7 +796,7 @@ namespace ndn
                 std::string error("error");
                 if (paquete_string.compare(error) == 0)
                 {
-                    std::cout << ">> Error retrieving packet from the queue! " << std::endl;
+                    std::cerr << ">> Error retrieving packet from the queue! " << std::endl;
                 }
                 else
                 {
@@ -810,9 +809,9 @@ namespace ndn
                     m_keyChain.sign(*data);
 
                     // Return Data packet to the requester
-                    std::cout << "<< Content of FULL IP packet sent in Data packet: " << std::endl;
+                    std::cerr << "<< Content of FULL IP packet sent in Data packet: " << std::endl;
                     PrintData(paquete, sizePaqueteCola);
-                    std::cout << "<< Size of FULL IP packet sent in Data packet: " << sizePaqueteCola << std::endl;
+                    std::cerr << "<< Size of FULL IP packet sent in Data packet: " << sizePaqueteCola << std::endl;
                     m_face.put(*data);
                 }
             }
@@ -829,12 +828,12 @@ namespace ndn
             void
             onData(const Data &data) const
             {
-                std::cout << "IP packet received in DATA !!!" << std::endl;
+                std::cerr << "IP packet received in DATA !!!" << std::endl;
                 // //Extraer paquete del DATA
                 const u_char *packet = (const u_char *)data.getContent().value();
                 std::size_t size = data.getContent().value_size();
-                std::cout << "Size of the received IP packet: " << size << std::endl;
-                std::cout << "Content of the received Data: " << std::endl;
+                std::cerr << "Size of the received IP packet: " << size << std::endl;
+                std::cerr << "Content of the received Data: " << std::endl;
                 PrintData(packet, size);
 
                 // Se apunta el puntero a la cabecera IP al comienzo del paquete
@@ -842,15 +841,15 @@ namespace ndn
                 struct sockaddr_in destIpData;
                 memset(&destIpData, 0, sizeof(destIpData));
                 destIpData.sin_addr.s_addr = iph->daddr;
-                std::cout << "Destination IP address on the received packet: " << inet_ntoa(destIpData.sin_addr) << std::endl;
+                std::cerr << "Destination IP address on the received packet: " << inet_ntoa(destIpData.sin_addr) << std::endl;
 
                 int raw_socket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
                 if (raw_socket < 0)
                 {
-                    std::cout << "<<    Error creating socket to send IP packet!! " << std::endl;
+                    std::cerr << "<<    Error creating socket to send IP packet!! " << std::endl;
                     exit(-1);
                 }
-                std::cout << "Socket created successfully! " << std::endl;
+                std::cerr << "Socket created successfully! " << std::endl;
 
                 // struct sockaddr_in {
                 //     short            sin_family;   // e.g. AF_INET
@@ -863,7 +862,7 @@ namespace ndn
                 addrDest = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
                 if (addrDest == NULL)
                 {
-                    std::cout << "Unable to allocate memory for the struct sockaddr_in! " << std::endl;
+                    std::cerr << "Unable to allocate memory for the struct sockaddr_in! " << std::endl;
                     close(raw_socket);
                 }
                 addrDest->sin_family = AF_INET;
@@ -883,13 +882,13 @@ namespace ndn
 
                 if (num_of_bytes == -1)
                 {
-                    std::cout << "Error sending RAW SOCKET!!! " << std::endl;
+                    std::cerr << "Error sending RAW SOCKET!!! " << std::endl;
                     free(addrDest);
                     close(raw_socket);
                 }
                 else
                 {
-                    std::cout << "Raw socket sent successfully!" << std::endl;
+                    std::cerr << "Raw socket sent successfully!" << std::endl;
                     free(addrDest);
                     close(raw_socket);
                 }
@@ -898,13 +897,13 @@ namespace ndn
             void
             onNack(const lp::Nack &nack) const
             {
-                std::cout << "Received Nack with reason " << nack.getReason() << std::endl;
+                std::cerr << "Received Nack with reason " << nack.getReason() << std::endl;
             }
 
             void
             onTimeout(const Interest &interest) const
             {
-                std::cout << "Timeout for " << interest << std::endl;
+                std::cerr << "Timeout for " << interest << std::endl;
             }
 
         private:
