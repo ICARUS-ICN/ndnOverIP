@@ -6,7 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/ip.h>
 
-void Cola_paquetes::PrintData(const unsigned char *data, int Size)
+void Cola_paquetes::PrintData(const unsigned char *data, int Size) const
 {
     int i, j;
     for (i = 0; i < Size; i++)
@@ -82,7 +82,7 @@ int Cola_paquetes::addPaquete(packet_t &&packet_data)
 }
 
 //Función para recuperar un paquete de la cola identificado por el num de seqno que recibe como parametro
-const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno)
+const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
 {
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
