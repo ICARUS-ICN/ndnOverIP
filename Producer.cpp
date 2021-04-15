@@ -63,7 +63,8 @@ namespace
         struct iphdr *iph = (struct iphdr *)(packet + sizeof(struct ethhdr));
 
         //La siguiente variable contendra el contenido del paquete excluyendo la cabecera Ethernet
-        const u_char *packetIP = packet + sizeof(struct ethhdr);
+        Cola_paquetes::packet_t packetIP;
+        packetIP.assign(packet + sizeof(struct ethhdr), packet + size);
 
         //Se comprueba el protocolo (los ping seran ICMP)
         switch (iph->protocol)
@@ -97,7 +98,7 @@ namespace
             std::cerr << ">> NDN prefix found: " << gateway_envio << std::endl;
 
             //Se guarda el paquete en la cola, devolviendo el num de secuencia asignado
-            int seqno_paquete = cola_paquetes_nodo.addPaquete(packetIP, sizeIp) - 1;
+            int seqno_paquete = cola_paquetes_nodo.addPaquete(std::move(packetIP)) - 1;
             std::cerr << "Packet saved in the queue of the gateway with sqno = " << seqno_paquete << std::endl;
 
             //Mandar INTEREST "/mired/<gateway_envio>/ip/request/<miNodo>/<seqno_paquete>"

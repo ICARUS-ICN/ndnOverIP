@@ -39,7 +39,7 @@ public:
     void PrintData(const uint8_t *data, int Size);
 
     //Función para añadir un paquete a la cola del nodo: recibe los datos y el tamaño del paquete y lo guarda con el sqno correspondiente al estado actual del nodo
-    int addPaquete(const uint8_t *p, int size);
+    int addPaquete(packet_t &&packet);
 
     //Función para recuperar un paquete de la cola identificado por el num de seqno que recibe como parametro
     const packet_t &getPaquete(int seqno);

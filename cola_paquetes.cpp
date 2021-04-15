@@ -56,24 +56,25 @@ void Cola_paquetes::PrintData(const unsigned char *data, int Size)
 }
 
 //Función para añadir un paquete a la cola del nodo: recibe los datos y el tamaño del paquete y lo guarda con el sqno correspondiente al estado actual del nodo
-int Cola_paquetes::addPaquete(const unsigned char *p, int size)
+int Cola_paquetes::addPaquete(packet_t &&packet_data)
 {
+    const auto size = packet_data.size();
+
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
-    struct iphdr *iph = (struct iphdr *)p;
+    struct iphdr *iph = (struct iphdr *)packet_data.data();
     unsigned short iphdrlen = iph->ihl * 4;
-    struct icmphdr *icmph = (struct icmphdr *)(p + iphdrlen);
+    struct icmphdr *icmph = (struct icmphdr *)(packet_data.data() + iphdrlen);
     int header_size = iphdrlen + (sizeof(icmph)); // asumiendo que serán paquete ICMP
 
     //Imprimir por consola para comprobaciones
     std::cerr << "<< Content of PAYLOAD saved: " << std::endl;
-    PrintData(p + header_size, (size - header_size));
+    PrintData(packet_data.data() + header_size, (size - header_size));
     std::cerr << "<< Content of FULL packet saved: " << std::endl;
-    PrintData(p, size);
+    PrintData(packet_data.data(), size);
     std::cerr << "<< Size of FULL packet saved: " << size << std::endl;
 
-    Paquete_cola::packet_t packet_data;
-    packet_data.assign(p, p + size);
+    packet_data.erase(packet_data.begin(), packet_data.begin() + header_size);
     Paquete_cola packet(std::move(packet_data), seqno_nodo);
     paquetes.push_back(packet);
     seqno_nodo += 1;
