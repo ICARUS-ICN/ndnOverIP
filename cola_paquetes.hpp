@@ -35,6 +35,10 @@ class Cola_paquetes
 public:
     typedef Paquete_cola::packet_t packet_t;
 
+    Cola_paquetes() : seqno_nodo(1) {}
+
+    Cola_paquetes(const Cola_paquetes &) = delete;
+
     //Funcion para imprimir los datos que contiene un paquete
     void PrintData(const uint8_t *data, int Size) const;
 
@@ -53,7 +57,7 @@ public:
 private:
     mutable boost::mutex mtx_; //mutex para proteger tanto al seqno_nodo como a la cola en si
     std::vector<Paquete_cola> paquetes;
-    int seqno_nodo = 1; //inicializado a 1: se ira incrementando en una unidad con cada paquete añadido a la cola
+    int seqno_nodo; //inicializado a 1: se ira incrementando en una unidad con cada paquete añadido a la cola
 };
 
 #endif
