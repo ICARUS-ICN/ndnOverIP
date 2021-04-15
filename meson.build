@@ -5,6 +5,10 @@ project('ndnOverIP', 'cpp',
 ndn = [dependency('libndn-cxx'), dependency('libpcap')]
 
 executable('ndnOverIP',
-           'gateway.cpp',
+           ['gateway.cpp',
+           'Producer.cpp',
+           'util.cpp',
+           'cola_paquetes.cpp',
+           'main.cpp'],
            dependencies: ndn,
            install : true)
