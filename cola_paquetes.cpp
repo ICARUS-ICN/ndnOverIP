@@ -86,7 +86,7 @@ const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
 {
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
-    for (const auto p : paquetes)
+    for (const auto &p : paquetes)
     {
         if (p.getSeqno() == seqno)
         {
