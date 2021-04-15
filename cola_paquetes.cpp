@@ -97,23 +97,6 @@ const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno)
     return Paquete_cola::packet_t();
 }
 
-//Función para recuperar el tamaño de un paquete de la cola identificado por el num de seqno que recibe como parametro
-int Cola_paquetes::getPaqueteSize(int seqno)
-{
-    boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
-
-    for (const auto p : paquetes)
-    {
-        if (p.getSeqno() == seqno)
-        {
-            return p.getSize();
-        }
-    }
-
-    //Ningun paquete guardado en la cola tiene el SEQNO pedido
-    return -1;
-}
-
 //Función para recuperar la cola completa de paquetes y hacer el procesado de recuperar uno concreto posteriormente
 std::vector<Paquete_cola> Cola_paquetes::getCola()
 {

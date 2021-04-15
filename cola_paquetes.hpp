@@ -45,7 +45,10 @@ public:
     const packet_t &getPaquete(int seqno);
 
     //Función para recuperar el tamaño de un paquete de la cola identificado por el num de seqno que recibe como parametro
-    int getPaqueteSize(int seqno);
+    int getPaqueteSize(int seqno)
+    {
+        return getPaquete(seqno).size();
+    }
 
     //Función para recuperar la cola completa de paquetes y hacer el procesado de recuperar uno concreto posteriormente
     std::vector<Paquete_cola> getCola();
