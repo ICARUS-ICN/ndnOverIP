@@ -3,7 +3,8 @@
 #include <cstdio>
 #include <cstring>
 #include <netinet/in.h>
-#include <sstream>
+
+#include <boost/algorithm/string.hpp>
 
 #include <arpa/inet.h>
 #include <netinet/ether.h>
@@ -18,13 +19,8 @@ namespace util
     std::vector<std::string> split(const std::string &s, char delim)
     {
         std::vector<std::string> result;
-        std::stringstream ss(s);
-        std::string item;
 
-        while (getline(ss, item, delim))
-        {
-            result.push_back(item);
-        }
+        boost::split(result, s, [=](char c) { return c == delim; });
 
         return result;
     }
