@@ -35,7 +35,8 @@ namespace
     }
 
     // Usada para el procesado del paquete IP entrante
-    void pcap_callback(const u_char *packet, struct pcap_pkthdr *pkthdr, ndn::Face *face)
+    // Have to use a shared_ptr because bind forbids std::move and unique_ptr :(
+    void pcap_callback(std::shared_ptr<Cola_paquetes::packet_t> packetIP, struct pcap_pkthdr *pkthdr, ndn::Face *face)
     {
         struct sockaddr_in dest;
 
@@ -43,7 +44,7 @@ namespace
 
         //Se apunta el puntero a la cabecera Ethernet al comienzo del paquete
         struct ether_header *eptr;
-        eptr = (struct ether_header *)packet;
+        eptr = (struct ether_header *)packetIP->data();
 
         //Comprobar que es un paquete IP
         if (ntohs(eptr->ether_type) == ETHERTYPE_IP)
@@ -57,29 +58,26 @@ namespace
         }
 
         int size = pkthdr->len;
+        packetIP->resize(size);
         int sizeIp = size - sizeof(struct ethhdr);
 
         //Se accede a la cabecera IP, saltandose la cabecera Ethernet
-        struct iphdr *iph = (struct iphdr *)(packet + sizeof(struct ethhdr));
-
-        //La siguiente variable contendra el contenido del paquete excluyendo la cabecera Ethernet
-        Cola_paquetes::packet_t packetIP;
-        packetIP.assign(packet + sizeof(struct ethhdr), packet + size);
+        struct iphdr *iph = (struct iphdr *)(packetIP->data() + sizeof(struct ethhdr));
 
         //Se comprueba el protocolo (los ping seran ICMP)
         switch (iph->protocol)
         {
         case 1:
             std::cerr << "It is ICMP!" << std::endl;
-            print_icmp_packet(packet, size);
+            print_icmp_packet(packetIP->data(), size);
             break;
         case 6:
             std::cerr << "It is TCP!" << std::endl;
-            print_tcp_packet(packet, size);
+            print_tcp_packet(packetIP->data(), size);
             break;
         case 17:
             std::cerr << "It is UDP!" << std::endl;
-            print_udp_packet(packet, size);
+            print_udp_packet(packetIP->data(), size);
             break;
         default:
             std::cerr << "Unknown protocol!" << std::endl;
@@ -88,6 +86,9 @@ namespace
 
         //Se pasa a aplicar la logica de la pasarela NDN
         std::cerr << "Checking destination IP in the table..." << std::endl;
+
+        // La siguiente variable contendra el contenido del paquete excluyendo la cabecera Ethernet
+        packetIP->erase(packetIP->begin(), packetIP->begin() + sizeof(struct ethhdr));
 
         //Devuelve el indice de la entrada en la tabla que se corresponde con el prefijo destino
         int entrada_tabla = check_tabla_encaminamiento(dest.sin_addr);
@@ -98,7 +99,7 @@ namespace
             std::cerr << ">> NDN prefix found: " << gateway_envio << std::endl;
 
             //Se guarda el paquete en la cola, devolviendo el num de secuencia asignado
-            int seqno_paquete = cola_paquetes_nodo.addPaquete(std::move(packetIP)) - 1;
+            int seqno_paquete = cola_paquetes_nodo.addPaquete(std::move(*packetIP)) - 1;
             std::cerr << "Packet saved in the queue of the gateway with sqno = " << seqno_paquete << std::endl;
 
             //Mandar INTEREST "/mired/<gateway_envio>/ip/request/<miNodo>/<seqno_paquete>"
@@ -140,10 +141,14 @@ namespace
             struct pcap_pkthdr pkthdr;
             const u_char *paquete = pcap_next(interfaz_captura, &pkthdr);
 
+            // Copy the packet contents to a new buffer, as pcap_next reuses its buffers
+            auto packet = std::make_shared<Cola_paquetes::packet_t>();
+            packet->assign(paquete, paquete + pkthdr.len);
+
             std::cerr << "A packet from the IPv4 world has arrived!" << std::endl;
 
             // Desde el hilo ejecutamos variable_contexto.dispatch(callback...) cada vez que nos llega un paquete.
-            io_context->dispatch(bind(pcap_callback, paquete, &pkthdr, face));
+            io_context->dispatch(bind(pcap_callback, packet, &pkthdr, face));
         }
     }
 }
