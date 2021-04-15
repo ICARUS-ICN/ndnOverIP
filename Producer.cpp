@@ -17,21 +17,21 @@ namespace
 
     //Comprueba si la direccion destino de un paquete IP recibido coincide con una entrada de su tabla
     //Devuelve el índice de la coincidencia o -1 si no hay ninguna
-    int check_tabla_encaminamiento(struct in_addr dest_addr)
+    const Entrada_encaminamiento *check_tabla_encaminamiento(struct in_addr dest_addr)
     {
         //Se pasa a recorrer la tabla de encaminamiento buscando coincidencias...
         std::cerr << "Checking destination IP in the table: " << inet_ntoa(dest_addr) << std::endl;
-        for (std::size_t i = 0; i < tabla_encaminamiento.size(); i++)
+        for (const auto &entry : tabla_encaminamiento)
         {
-            if (tabla_encaminamiento[i].prefijo_ip.s_addr == dest_addr.s_addr)
+            if (entry.prefijo_ip.s_addr == dest_addr.s_addr)
             {
                 std::cerr << "Destination IP is reachable through NDN network!" << std::endl;
-                return (static_cast<int>(i));
+                return &entry;
             }
         }
         //Si se llega a este punto es que no hubo coincidencias en la tabla de encaminamiento
         std::cerr << "Destination IP is NOT reachable through NDN network!" << std::endl;
-        return -1;
+        return nullptr;
     }
 
     // Usada para el procesado del paquete IP entrante
@@ -91,11 +91,11 @@ namespace
         packetIP->erase(packetIP->begin(), packetIP->begin() + sizeof(struct ethhdr));
 
         //Devuelve el indice de la entrada en la tabla que se corresponde con el prefijo destino
-        int entrada_tabla = check_tabla_encaminamiento(dest.sin_addr);
+        auto entrada_tabla = check_tabla_encaminamiento(dest.sin_addr);
 
-        if (entrada_tabla >= 0)
+        if (entrada_tabla != nullptr)
         {
-            std::string gateway_envio = tabla_encaminamiento[entrada_tabla].prefijo_ndn;
+            std::string gateway_envio = entrada_tabla->prefijo_ndn;
             std::cerr << ">> NDN prefix found: " << gateway_envio << std::endl;
 
             //Se guarda el paquete en la cola, devolviendo el num de secuencia asignado
