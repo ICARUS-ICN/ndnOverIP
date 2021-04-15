@@ -223,7 +223,7 @@ namespace ndn
             std::vector<std::string> tokens = split(interestName_entrante, '/');
             std::string seqno = tokens.at(5);
 
-            const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno));
+            const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
             int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
 
             //Verificar que no hubo error extrayendo el paquete de la cola

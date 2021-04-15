@@ -72,14 +72,16 @@ int Cola_paquetes::addPaquete(const unsigned char *p, int size)
     PrintData(p, size);
     std::cerr << "<< Size of FULL packet saved: " << size << std::endl;
 
-    Paquete_cola packet(p, seqno_nodo, size);
+    Paquete_cola::packet_t packet_data;
+    packet_data.assign(p, p + size);
+    Paquete_cola packet(std::move(packet_data), seqno_nodo);
     paquetes.push_back(packet);
     seqno_nodo += 1;
     return seqno_nodo; //devuelve el seqno_nodo+1 (el paquete se guardo en la cola con seqno --> Necesario para poder usarse en el Interest enviado)
 }
 
 //Función para recuperar un paquete de la cola identificado por el num de seqno que recibe como parametro
-const unsigned char *Cola_paquetes::getPaquete(int seqno)
+const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno)
 {
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
@@ -91,10 +93,8 @@ const unsigned char *Cola_paquetes::getPaquete(int seqno)
         }
     }
 
-    //Ningun paquete guardado en la cola tiene el SEQNO pedido
-    std::string strVar = "error";
-    const unsigned char *error = reinterpret_cast<const unsigned char *>(strVar.c_str());
-    return error;
+    // If not found, return an empty packet. Should this be an exception?
+    return Paquete_cola::packet_t();
 }
 
 //Función para recuperar el tamaño de un paquete de la cola identificado por el num de seqno que recibe como parametro
