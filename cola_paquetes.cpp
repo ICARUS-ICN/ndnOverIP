@@ -96,10 +96,3 @@ const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno)
     // If not found, return an empty packet. Should this be an exception?
     return Paquete_cola::packet_t();
 }
-
-//Función para recuperar la cola completa de paquetes y hacer el procesado de recuperar uno concreto posteriormente
-std::vector<Paquete_cola> Cola_paquetes::getCola()
-{
-    boost::lock_guard<boost::mutex> mi_lock(mtx_);
-    return paquetes;
-}

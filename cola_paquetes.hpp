@@ -50,9 +50,6 @@ public:
         return getPaquete(seqno).size();
     }
 
-    //Función para recuperar la cola completa de paquetes y hacer el procesado de recuperar uno concreto posteriormente
-    std::vector<Paquete_cola> getCola();
-
 private:
     boost::mutex mtx_; //mutex para proteger tanto al seqno_nodo como a la cola en si
     std::vector<Paquete_cola> paquetes;
