@@ -84,6 +84,7 @@ int Cola_paquetes::addPaquete(packet_t &&packet_data)
 //Función para recuperar un paquete de la cola identificado por el num de seqno que recibe como parametro
 const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
 {
+    static Paquete_cola::packet_t dummy;
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
     for (const auto &p : paquetes)
@@ -95,5 +96,5 @@ const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
     }
 
     // If not found, return an empty packet. Should this be an exception?
-    return Paquete_cola::packet_t();
+    return dummy;
 }
