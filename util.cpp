@@ -25,9 +25,12 @@ namespace util
         return result;
     }
 
-    void print_icmp_packet(const u_char *Buffer, int Size)
+    struct sockaddr_in print_icmp_packet(const u_char *Buffer, int Size)
     {
         unsigned short iphdrlen;
+        struct sockaddr_in dest;
+
+        memset(&dest, 0, sizeof(dest));
 
         struct iphdr *iph = (struct iphdr *)(Buffer + sizeof(struct ethhdr));
         iphdrlen = iph->ihl * 4;
@@ -39,7 +42,7 @@ namespace util
         printf("\n\n***********************ICMP Packet*************************\n");
 
         //Se procesa la cabecera IP y desde ahi se realiza la llamada a la pasarela NDN
-        util::print_ip_header(Buffer, Size);
+        dest = util::print_ip_header(Buffer, Size);
 
         printf("Data Payload: \n");
 
@@ -49,9 +52,12 @@ namespace util
         printf("\n###########################################################");
     }
 
-    void print_tcp_packet(const u_char *Buffer, int Size)
+    struct sockaddr_in print_tcp_packet(const u_char *Buffer, int Size)
     {
         unsigned short iphdrlen;
+        struct sockaddr_in dest;
+
+        memset(&dest, 0, sizeof(dest));
 
         struct iphdr *iph = (struct iphdr *)(Buffer + sizeof(struct ethhdr));
         iphdrlen = iph->ihl * 4;
@@ -63,7 +69,7 @@ namespace util
         printf("\n\n***********************TCP Packet*************************\n");
 
         //Se procesa la cabecera IP y desde ahi se realiza la llamada a la pasarela NDN
-        print_ip_header(Buffer, Size);
+        dest = print_ip_header(Buffer, Size);
 
         printf("\n");
         printf("TCP Header\n");
@@ -80,10 +86,13 @@ namespace util
         printf("\n###########################################################");
     }
 
-    void print_udp_packet(const u_char *Buffer, int Size)
+    struct sockaddr_in print_udp_packet(const u_char *Buffer, int Size)
     {
 
         unsigned short iphdrlen;
+        struct sockaddr_in dest;
+
+        memset(&dest, 0, sizeof(dest));
 
         struct iphdr *iph = (struct iphdr *)(Buffer + sizeof(struct ethhdr));
         iphdrlen = iph->ihl * 4;
@@ -95,7 +104,7 @@ namespace util
         printf("\n\n***********************UDP Packet*************************\n");
 
         //Se procesa la cabecera IP y desde ahi se realiza la llamada a la pasarela NDN
-        print_ip_header(Buffer, Size);
+        dest = print_ip_header(Buffer, Size);
 
         printf("\nUDP Header\n");
         printf("   |-Source Port      : %d\n", ntohs(udph->source));
@@ -111,7 +120,7 @@ namespace util
     }
 
     //Funcion que accede y procesa los datos de la cabecera IP
-    void print_ip_header(const u_char *Buffer, int size)
+    struct sockaddr_in print_ip_header(const u_char *Buffer, int size)
     {
         //unsigned short iphdrlen;
 
@@ -133,7 +142,7 @@ namespace util
         printf("   |-Source IP        : %s\n", inet_ntoa(source.sin_addr));
         printf("   |-Destination IP   : %s\n", inet_ntoa(dest.sin_addr));
 
-        return;
+        return dest;
     }
 
     //Funcion para imprimir los datos que contiene el paquete

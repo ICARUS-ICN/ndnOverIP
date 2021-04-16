@@ -39,6 +39,7 @@ namespace
     void pcap_callback(std::shared_ptr<Cola_paquetes::packet_t> packetIP, struct pcap_pkthdr *pkthdr, ndn::Face *face)
     {
         struct sockaddr_in dest;
+        memset(&dest, 0, sizeof(dest));
 
         std::cerr << "Ready to process an IP packet!" << std::endl;
 
@@ -69,15 +70,15 @@ namespace
         {
         case 1:
             std::cerr << "It is ICMP!" << std::endl;
-            print_icmp_packet(packetIP->data(), size);
+            dest = print_icmp_packet(packetIP->data(), size);
             break;
         case 6:
             std::cerr << "It is TCP!" << std::endl;
-            print_tcp_packet(packetIP->data(), size);
+            dest = print_tcp_packet(packetIP->data(), size);
             break;
         case 17:
             std::cerr << "It is UDP!" << std::endl;
-            print_udp_packet(packetIP->data(), size);
+            dest = print_udp_packet(packetIP->data(), size);
             break;
         default:
             std::cerr << "Unknown protocol!" << std::endl;

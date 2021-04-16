@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <netinet/in.h>
 
 namespace util
 {
@@ -11,10 +12,10 @@ namespace util
     split(const std::string &, char);
 
     //Funciones para procesar y acceder a las cabeceras del paquete IP capturado
-    void print_icmp_packet(const unsigned char *, int);
-    void print_tcp_packet(const unsigned char *, int);
-    void print_udp_packet(const unsigned char *, int);
-    void print_ip_header(const u_char *buffer, int size);
+    struct sockaddr_in print_icmp_packet(const unsigned char *, int);
+    struct sockaddr_in print_tcp_packet(const unsigned char *, int);
+    struct sockaddr_in print_udp_packet(const unsigned char *, int);
+    struct sockaddr_in print_ip_header(const u_char *buffer, int size);
 
     //Funcion para imprimir el payload de un paquete por consola
     void PrintData(const unsigned char *, int);
