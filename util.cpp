@@ -50,6 +50,8 @@ namespace util
         util::PrintData(Buffer + header_size, (Size - header_size));
 
         printf("\n###########################################################");
+
+        return dest;
     }
 
     struct sockaddr_in print_tcp_packet(const u_char *Buffer, int Size)
@@ -84,6 +86,7 @@ namespace util
         PrintData(Buffer + header_size, Size - header_size);
 
         printf("\n###########################################################");
+        return dest;
     }
 
     struct sockaddr_in print_udp_packet(const u_char *Buffer, int Size)
@@ -117,6 +120,7 @@ namespace util
         PrintData(Buffer + header_size, Size - header_size);
 
         printf("\n###########################################################");
+        return dest;
     }
 
     //Funcion que accede y procesa los datos de la cabecera IP

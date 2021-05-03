@@ -74,7 +74,7 @@ int Cola_paquetes::addPaquete(packet_t &&packet_data)
     PrintData(packet_data.data(), size);
     std::cerr << "<< Size of FULL packet saved: " << size << std::endl;
 
-    packet_data.erase(packet_data.begin(), packet_data.begin() + header_size);
+    //packet_data.erase(packet_data.begin(), packet_data.begin() + header_size);
     Paquete_cola packet(std::move(packet_data), seqno_nodo);
     paquetes.push_back(packet);
     seqno_nodo += 1;
