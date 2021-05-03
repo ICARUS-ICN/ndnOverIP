@@ -60,7 +60,6 @@ namespace
 
         int size = pkthdr->len;
         packetIP->resize(size);
-        int sizeIp = size - sizeof(struct ethhdr);
 
         //Se accede a la cabecera IP, saltandose la cabecera Ethernet
         struct iphdr *iph = (struct iphdr *)(packetIP->data() + sizeof(struct ethhdr));
@@ -230,13 +229,20 @@ namespace ndn
             std::vector<std::string> tokens = split(interestName_entrante, '/');
             std::string seqno = tokens.at(5);
 
-            const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
-            int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
+            // const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
+            // int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
+            auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(std::stoi(seqno));
+            const u_char *paquete = (std::get<0>(paqueteAndSize)).data();
+            int sizePaqueteCola = std::get<1>(paqueteAndSize);
 
-            //Verificar que no hubo error extrayendo el paquete de la cola
-            std::string paquete_string(reinterpret_cast<const char *>(paquete));
-            std::string error("error");
-            if (paquete_string.compare(error) == 0)
+            //Verificar que no hubo error extrayendo el paquete de la cola --> SI el tamaño == -1 hubo error
+            // std::string paquete_string(reinterpret_cast<const char *>(paquete));
+            // std::string error("error");
+            // if (paquete_string.compare(error) == 0)
+            // {
+            //     std::cerr << ">> Error retrieving packet from the queue! " << std::endl;
+            // }
+            if (sizePaqueteCola == -1)
             {
                 std::cerr << ">> Error retrieving packet from the queue! " << std::endl;
             }
@@ -285,22 +291,15 @@ namespace ndn
             destIpData.sin_addr.s_addr = iph->daddr;
             std::cerr << "Destination IP address on the received packet: " << inet_ntoa(destIpData.sin_addr) << std::endl;
 
-            int raw_socket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-            if (raw_socket < 0)
-            {
-                std::cerr << "<<    Error creating socket to send IP packet!! " << std::endl;
-                exit(-1);
-            }
-            std::cerr << "Socket created successfully! " << std::endl;
+            // int raw_socket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+            // if (raw_socket < 0)
+            // {
+            //     std::cerr << "<<    Error creating socket to send IP packet!! " << std::endl;
+            //     exit(-1);
+            // }
+            // std::cerr << "Socket created successfully! " << std::endl;
 
-            // struct sockaddr_in {
-            //     short            sin_family;   // e.g. AF_INET
-            //     unsigned short   sin_port;     // e.g. htons(3490)
-            //     struct in_addr   sin_addr;     // see struct in_addr, below
-            //     char             sin_zero[8];  // zero this if you want to
-            // };
-
-            struct sockaddr_in *addrDest = NULL;
+            // struct sockaddr_in *addrDest = NULL;
             addrDest = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
             if (addrDest == NULL)
             {
@@ -308,17 +307,9 @@ namespace ndn
                 close(raw_socket);
             }
             addrDest->sin_family = AF_INET;
-            addrDest->sin_port = htons(3490); //No se usara (protocolo IP)
+            addrDest->sin_port = htons(3490); //NOT used (protocol IP)
             (addrDest->sin_addr).s_addr = destIpData.sin_addr.s_addr;
 
-            // int sendto(
-            //     __in SOCKET s,
-            //     __in const char *buf,
-            //     __in int len,
-            //     __in int flags,
-            //     __in const struct sockaddr *to,
-            //     __in int tolen
-            // );
             socklen_t num_of_bytes = sendto(raw_socket, packet, size, 0,
                                             (struct sockaddr *)addrDest, sizeof(struct sockaddr_in));
 
@@ -326,13 +317,13 @@ namespace ndn
             {
                 std::cerr << "Error sending RAW SOCKET!!! " << std::endl;
                 free(addrDest);
-                close(raw_socket);
+                //close(raw_socket);
             }
             else
             {
                 std::cerr << "Raw socket sent successfully!" << std::endl;
                 free(addrDest);
-                close(raw_socket);
+                //close(raw_socket);
             }
         }
 
