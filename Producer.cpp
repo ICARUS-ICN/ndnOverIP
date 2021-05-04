@@ -2,6 +2,7 @@
 #include "util.hpp"
 
 #include <iostream>
+#include <tuple>
 
 #include <arpa/inet.h>
 #include <netinet/ether.h>
@@ -229,20 +230,16 @@ namespace ndn
             std::vector<std::string> tokens = split(interestName_entrante, '/');
             std::string seqno = tokens.at(5);
 
-            // const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
-            // int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
-            auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(std::stoi(seqno));
-            const u_char *paquete = (std::get<0>(paqueteAndSize)).data();
-            int sizePaqueteCola = std::get<1>(paqueteAndSize);
+            const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
+            int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
 
-            //Verificar que no hubo error extrayendo el paquete de la cola --> SI el tamaño == -1 hubo error
-            // std::string paquete_string(reinterpret_cast<const char *>(paquete));
-            // std::string error("error");
-            // if (paquete_string.compare(error) == 0)
-            // {
-            //     std::cerr << ">> Error retrieving packet from the queue! " << std::endl;
-            // }
-            if (sizePaqueteCola == -1)
+            // Intento de buscar el paquete solo 1 vez y devolver tupla con datos y size --> PROBLEMAS CON REFERENCIA
+            //auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(std::stoi(seqno));
+            //const u_char *paquete = (std::get<0>(paqueteAndSize)).data();
+            //int sizePaqueteCola = std::get<1>(paqueteAndSize);
+
+            //Verificar que no hubo error extrayendo el paquete de la cola --> SI el tamaño == 0 no se encontró (dummy)
+            if (sizePaqueteCola == 0)
             {
                 std::cerr << ">> Error retrieving packet from the queue! " << std::endl;
             }

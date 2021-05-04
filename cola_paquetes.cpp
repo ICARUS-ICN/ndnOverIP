@@ -99,7 +99,7 @@ const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
     return dummy;
 }
 
-std::tuple<const Paquete_cola::packet_t &, int> Cola_paquetes::getPaqueteAndSize(int seqno) const
+std::tuple<const Paquete_cola::packet_t&, int> Cola_paquetes::getPaqueteAndSize(int seqno) const
 {
     static Paquete_cola::packet_t dummy;
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
