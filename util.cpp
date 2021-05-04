@@ -50,7 +50,6 @@ namespace util
         util::PrintData(Buffer + header_size, (Size - header_size));
 
         printf("\n###########################################################");
-
         return dest;
     }
 

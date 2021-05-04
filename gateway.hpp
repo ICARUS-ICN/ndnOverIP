@@ -11,7 +11,6 @@
 //Estructura que modela una entrada en la "tabla de encaminamiento" IP en la red NDN
 typedef struct
 {
-    //std::string dir_ip;
     struct in_addr prefijo_ip;
     std::string prefijo_ndn;
 
@@ -25,6 +24,12 @@ extern pcap_t *interfaz_captura;
 
 //Nombre del nodo gateway recibido como parametro por línea de comandos
 extern std::string thisNodo;
+
+//Socket para envío de paquetes al mundo IP
+extern int raw_socket;
+
+//Struct necesario para enviar paquete por el socket
+extern struct sockaddr_in *addrDest;
 
 //Representa la cola de paquetes IP del nodo que estan esperando a ser enviados por la red NDN
 extern Cola_paquetes cola_paquetes_nodo;

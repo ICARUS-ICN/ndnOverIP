@@ -2,6 +2,7 @@
 #define COLA_PAQUETES_HPP
 
 #include <boost/thread.hpp>
+#include <tuple>
 
 //Clase que modela un paquete IP esperando en la cola para ser enviado a través de la red NDN
 class Paquete_cola
@@ -42,7 +43,7 @@ public:
     //Funcion para imprimir los datos que contiene un paquete
     void PrintData(const uint8_t *data, int Size) const;
 
-    //Función para añadir un paquete a la cola del nodo: recibe los datos y el tamaño del paquete y lo guarda con el sqno correspondiente al estado actual del nodo
+    //Función para añadir un paquete a la cola del nodo: lo guarda con el sqno correspondiente al estado actual del nodo
     int addPaquete(packet_t &&packet);
 
     //Función para recuperar un paquete de la cola identificado por el num de seqno que recibe como parametro
@@ -53,6 +54,8 @@ public:
     {
         return getPaquete(seqno).size();
     }
+
+    std::tuple<const packet_t&, int> getPaqueteAndSize(int seqno) const;
 
 private:
     mutable boost::mutex mtx_; //mutex para proteger tanto al seqno_nodo como a la cola en si
