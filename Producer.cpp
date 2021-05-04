@@ -288,15 +288,6 @@ namespace ndn
             destIpData.sin_addr.s_addr = iph->daddr;
             std::cerr << "Destination IP address on the received packet: " << inet_ntoa(destIpData.sin_addr) << std::endl;
 
-            // int raw_socket = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-            // if (raw_socket < 0)
-            // {
-            //     std::cerr << "<<    Error creating socket to send IP packet!! " << std::endl;
-            //     exit(-1);
-            // }
-            // std::cerr << "Socket created successfully! " << std::endl;
-
-            // struct sockaddr_in *addrDest = NULL;
             addrDest = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
             if (addrDest == NULL)
             {
@@ -314,13 +305,11 @@ namespace ndn
             {
                 std::cerr << "Error sending RAW SOCKET!!! " << std::endl;
                 free(addrDest);
-                //close(raw_socket);
             }
             else
             {
                 std::cerr << "Raw socket sent successfully!" << std::endl;
                 free(addrDest);
-                //close(raw_socket);
             }
         }
 

@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
     {
         ndn::gateway::Producer producer;
         producer.run(); //crea un hijo
-        //return 0;
     }
     catch (const std::exception &e)
     {
