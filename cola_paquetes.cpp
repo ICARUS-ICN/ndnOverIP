@@ -98,19 +98,3 @@ const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
     // If not found, return an empty packet. Should this be an exception?
     return dummy;
 }
-
-std::tuple<const Paquete_cola::packet_t&, int> Cola_paquetes::getPaqueteAndSize(int seqno) const
-{
-    static Paquete_cola::packet_t dummy;
-    boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
-    for (const auto &p : paquetes)
-    {
-        if (p.getSeqno() == seqno)
-        {
-            return std::make_tuple(p.getPacket(), p.getSize());
-        }
-    }
-
-    // If not found, return an empty packet. Should this be an exception?
-    return std::make_tuple(dummy, -1);
-}

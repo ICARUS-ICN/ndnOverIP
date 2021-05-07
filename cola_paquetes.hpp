@@ -55,8 +55,6 @@ public:
         return getPaquete(seqno).size();
     }
 
-    std::tuple<const packet_t&, int> getPaqueteAndSize(int seqno) const;
-
 private:
     mutable boost::mutex mtx_; //mutex para proteger tanto al seqno_nodo como a la cola en si
     std::vector<Paquete_cola> paquetes;
