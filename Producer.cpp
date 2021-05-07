@@ -228,13 +228,13 @@ namespace ndn
             //Se recupera el paquete IP de la cola de paquetes utilizando el seqno en la Interest
             std::string interestName_entrante = (interest_datagram.getName()).toUri();
             std::vector<std::string> tokens = split(interestName_entrante, '/');
-            std::string seqno = tokens.at(5);
+            const auto seqno = std::stoi(tokens.at(5));
 
-            const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
-            int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
+            const u_char *paquete = cola_paquetes_nodo.getPaquete(seqno).data();
+            int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(seqno);
 
             // Intento de buscar el paquete solo 1 vez y devolver tupla con datos y size --> PROBLEMAS CON REFERENCIA
-            //auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(std::stoi(seqno));
+            //auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(seqno);
             //const u_char *paquete = (std::get<0>(paqueteAndSize)).data();
             //int sizePaqueteCola = std::get<1>(paqueteAndSize);
 
