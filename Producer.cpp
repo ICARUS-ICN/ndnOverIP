@@ -254,6 +254,8 @@ namespace ndn
                 PrintData(paquete, sizePaqueteCola);
                 std::cerr << "<< Size of FULL IP packet sent in Data packet: " << sizePaqueteCola << std::endl;
                 m_face.put(*data);
+
+                cola_paquetes_nodo.erasePaquete(seqno);
             }
         }
 

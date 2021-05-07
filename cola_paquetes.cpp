@@ -76,25 +76,35 @@ int Cola_paquetes::addPaquete(packet_t &&packet_data)
     std::cerr << "<< Size of FULL packet saved: " << size << std::endl;
 
     Paquete_cola packet(std::move(packet_data), seqno_nodo);
-    paquetes.push_back(packet);
+    paquetes.emplace(std::make_pair(seqno_nodo, packet));
     seqno_nodo += 1;
     return seqno_nodo; //devuelve el seqno_nodo+1 (el paquete se guardo en la cola con seqno --> Necesario para poder usarse en el Interest enviado)
 }
 
 //Función para recuperar un paquete de la cola identificado por el num de seqno que recibe como parametro
-const Paquete_cola::packet_t &Cola_paquetes::getPaquete(int seqno) const
+const Paquete_cola::packet_t &Cola_paquetes::getPaquete(unsigned int seqno) const
 {
     static Paquete_cola::packet_t dummy;
     boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
 
-    for (const auto &p : paquetes)
+    const auto pkt = paquetes.find(seqno);
+    if (pkt == paquetes.end())
     {
-        if (p.getSeqno() == seqno)
-        {
-            return p.getPacket();
-        }
+        return dummy;
     }
 
-    // If not found, return an empty packet. Should this be an exception?
-    return dummy;
+    return pkt->second.getPacket();
+}
+
+void Cola_paquetes::erasePaquete(unsigned int seqno)
+{
+    boost::lock_guard<boost::mutex> mi_lock(mtx_); // operacion protegida por mutex
+
+    const auto pkt = paquetes.find(seqno);
+    if (pkt == paquetes.end())
+    {
+        return;
+    }
+
+    paquetes.erase(pkt);
 }
