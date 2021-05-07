@@ -230,13 +230,9 @@ namespace ndn
             std::vector<std::string> tokens = split(interestName_entrante, '/');
             const auto seqno = std::stoi(tokens.at(5));
 
-            const u_char *paquete = cola_paquetes_nodo.getPaquete(seqno).data();
-            int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(seqno);
-
-            // Intento de buscar el paquete solo 1 vez y devolver tupla con datos y size --> PROBLEMAS CON REFERENCIA
-            //auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(seqno);
-            //const u_char *paquete = (std::get<0>(paqueteAndSize)).data();
-            //int sizePaqueteCola = std::get<1>(paqueteAndSize);
+            const auto &pkt = cola_paquetes_nodo.getPaquete(seqno);
+            const uint8_t *paquete = pkt.data();
+            int sizePaqueteCola = pkt.size();
 
             //Verificar que no hubo error extrayendo el paquete de la cola --> SI el tamaño == 0 no se encontró (dummy)
             if (sizePaqueteCola == 0)
@@ -248,7 +244,7 @@ namespace ndn
                 // Create Data packet
                 auto data = make_shared<Data>(interest_datagram.getName());
                 data->setFreshnessPeriod(10_s);
-                data->setContent(reinterpret_cast<const uint8_t *>(paquete), sizePaqueteCola);
+                data->setContent(paquete, sizePaqueteCola);
 
                 // Sign Data packet with default identity
                 m_keyChain.sign(*data);
