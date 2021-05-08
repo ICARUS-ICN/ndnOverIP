@@ -228,15 +228,11 @@ namespace ndn
             //Se recupera el paquete IP de la cola de paquetes utilizando el seqno en la Interest
             std::string interestName_entrante = (interest_datagram.getName()).toUri();
             std::vector<std::string> tokens = split(interestName_entrante, '/');
-            std::string seqno = tokens.at(5);
+            const auto seqno = std::stoi(tokens.at(5));
 
-            const u_char *paquete = cola_paquetes_nodo.getPaquete(std::stoi(seqno)).data();
-            int sizePaqueteCola = cola_paquetes_nodo.getPaqueteSize(std::stoi(seqno));
-
-            // Intento de buscar el paquete solo 1 vez y devolver tupla con datos y size --> PROBLEMAS CON REFERENCIA
-            //auto paqueteAndSize = cola_paquetes_nodo.getPaqueteAndSize(std::stoi(seqno));
-            //const u_char *paquete = (std::get<0>(paqueteAndSize)).data();
-            //int sizePaqueteCola = std::get<1>(paqueteAndSize);
+            const auto &pkt = cola_paquetes_nodo.getPaquete(seqno);
+            const uint8_t *paquete = pkt.data();
+            int sizePaqueteCola = pkt.size();
 
             //Verificar que no hubo error extrayendo el paquete de la cola --> SI el tamaño == 0 no se encontró (dummy)
             if (sizePaqueteCola == 0)
@@ -248,7 +244,7 @@ namespace ndn
                 // Create Data packet
                 auto data = make_shared<Data>(interest_datagram.getName());
                 data->setFreshnessPeriod(10_s);
-                data->setContent(reinterpret_cast<const uint8_t *>(paquete), sizePaqueteCola);
+                data->setContent(paquete, sizePaqueteCola);
 
                 // Sign Data packet with default identity
                 m_keyChain.sign(*data);
@@ -258,6 +254,8 @@ namespace ndn
                 PrintData(paquete, sizePaqueteCola);
                 std::cerr << "<< Size of FULL IP packet sent in Data packet: " << sizePaqueteCola << std::endl;
                 m_face.put(*data);
+
+                cola_paquetes_nodo.erasePaquete(seqno);
             }
         }
 
