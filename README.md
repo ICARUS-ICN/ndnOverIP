@@ -1,5 +1,6 @@
 ndnOverIP
 ======
+[![CI](https://github.com/ICARUS-ICN/ndnOverIP/actions/workflows/ci.yml/badge.svg)](https://github.com/ICARUS-ICN/ndnOverIP/actions/workflows/ci.yml)
 
 A simple and efficient gateway for IP over NDN proxying
 
@@ -18,7 +19,8 @@ This tool permits to route IP traffic over an NDN network domain.
   
 ## Legal
 Copyright ⓒ 2020–2021 Universidade de Vigo
+
 Author: Marielena Márquez Barreiro
 
-This software is licensed under the GNU General Public License, version 3 (GPL-3.0) or later. For information see LICENSE
+This software is licensed under the GNU General Public License, version 3 (GPL-3.0) or later. For information see LICENSE.
 

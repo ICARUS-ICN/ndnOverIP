@@ -1,0 +1,59 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: ndn-cxx
+          key: ${{ runner.os }}-ndn-cxx-icarus
+      - name: Checkout ndn-cxx
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository:  named-data/ndn-cxx 
+          path: ndn-cxx
+          ref: 'ndn-cxx-0.7.1'
+      - name: Install dependencies
+        run: sudo apt install -y g++ pkg-config python3-minimal libboost-all-dev libssl-dev libsqlite3-dev meson libpcap-dev
+      - name: Configure ndn-cxx
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cd ndn-cxx
+          ./waf configure --without-tools
+      - name: Build ndn-cxx
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cd ndn-cxx
+          ./waf
+      - name: Install ndn-cxx
+        run: |
+          cd ndn-cxx
+          sudo ./waf install
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          meson setup build
+      - name: Build
+        run: |
+          ninja -v -C build
+
