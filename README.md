@@ -1,6 +1,8 @@
 ndnOverIP
 ======
-[![CI](https://github.com/ICARUS-ICN/ndnOverIP/actions/workflows/ci.yml/badge.svg)](https://github.com/ICARUS-ICN/ndnOverIP/actions/workflows/ci.yml)
+[![CI](https://github.com/ICARUS-ICN/ndnOverIP/actions/workflows/ci.yml/badge.svg)](https://github.com/ICARUS-ICN/ndnOverIP/actions/workflows/ci.yml) [![DOI](https://zenodo.org/badge/378873656.svg)](https://zenodo.org/doi/10.5281/zenodo.10912337)
+
+
 
 A simple and efficient gateway for IP over NDN proxying
 
